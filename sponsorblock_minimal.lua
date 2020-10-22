@@ -25,9 +25,8 @@ function getranges()
     	if not string.match(sponsors.stdout,"%[(.-)%]") then return end
 	ranges = {}
 	for i in string.gmatch(string.sub(sponsors.stdout,2,-2),"%[(.-)%]") do
-		for k,v in string.gmatch(i,"(%d+.?%d*),(%d+.?%d*)") do
-                	ranges[k] = v
-        	end
+		k,v = string.match(i,"(%d+.?%d*),(%d+.?%d*)")
+		ranges[k] = v
 	end
 	return
 end
@@ -65,17 +64,16 @@ function file_loaded()
 end
 
 function toggle()
-	if not ON then
-		mp.observe_property("time-pos", "native", skip_ads)
-		mp.osd_message("[Sponsorblock] on")
-		ON = true
+	if ON then
+		mp.unobserve_property(skip_ads)
+		mp.osd_message("[Sponsorblock] off")
+		ON = false
 		return
 	end
-	mp.unobserve_property(skip_ads)
-	mp.osd_message("[Sponsorblock] off")
-	ON = false
+	mp.observe_property("time-pos", "native", skip_ads)
+	mp.osd_message("[Sponsorblock] on")
+	ON = true
 	return
 end
 
 mp.register_event("file-loaded", file_loaded)
-
