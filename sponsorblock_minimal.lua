@@ -17,7 +17,7 @@ function getranges()
         	"-d",
         	"videoID="..youtube_id,
         	"-d",
-		"'categories=["..options.categories.."]'",
+		"categories=["..options.categories.."]",
 		"-G",
         	options.API}
 	local sponsors
