@@ -53,10 +53,7 @@ function file_loaded()
 	youtube_id = string.sub(youtube_id, 1, 11)
 
 	getranges()
-	if not ranges then
-		mp.unregister_event(file_loaded)
-		return
-	end
+	if not ranges then return end
 
 	ON = true
 	mp.add_key_binding("b","sponsorblock",toggle)

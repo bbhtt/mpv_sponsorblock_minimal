@@ -5,5 +5,7 @@ Also this uses curl rather than python to get the ranges.
 There is also no cache so the ranges may get redownloaded
 if you watch a video more than once.
 
+b toggles between on/off
+
 Here is a link to the original one:
 https://github.com/po5/mpv_sponsorblock
