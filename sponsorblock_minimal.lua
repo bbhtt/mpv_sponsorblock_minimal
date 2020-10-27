@@ -20,26 +20,29 @@ function getranges()
 		"categories=["..options.categories.."]",
 		"-G",
         	options.API}
-	local sponsors
-    	sponsors = mp.command_native({name = "subprocess", capture_stdout = true, playback_only = false, args = args})
-    	if not string.match(sponsors.stdout,"%[(.-)%]") then return end
-	ranges = {}
-	for i in string.gmatch(string.sub(sponsors.stdout,2,-2),"%[(.-)%]") do
-		k,v = string.match(i,"(%d+.?%d*),(%d+.?%d*)")
-		ranges[k] = v
+    	local sponsors = mp.command_native({name = "subprocess", capture_stdout = true, playback_only = false, args = args})
+
+    	if string.match(sponsors.stdout,"%[(.-)%]") then
+		ranges = {}
+		for i in string.gmatch(string.sub(sponsors.stdout,2,-2),"%[(.-)%]") do
+			k,v = string.match(i,"(%d+.?%d*),(%d+.?%d*)")
+			ranges[k] = v
+		end
 	end
 	return
 end
 
 function skip_ads(name,pos)
-	if pos == nil then return end
-	for k,v in pairs(ranges) do
-		if tonumber(k) <= pos and tonumber(v) > pos then
-        		mp.osd_message("[sponsorblock] skipping to "..tostring(v))
-			mp.set_property("time-pos",tonumber(v))
-            		return
-    		end
+	if pos ~= nil then
+		for k,v in pairs(ranges) do
+			if tonumber(k) <= pos and tonumber(v) > pos then
+        			mp.osd_message("[sponsorblock] skipping forward "..math.floor(tonumber(v)-mp.get_property("time-pos")).."s")
+				mp.set_property("time-pos",tonumber(v)+0.01)
+            			return
+    			end
+		end
 	end
+	return
 end
 
 function file_loaded()
@@ -53,11 +56,12 @@ function file_loaded()
 	youtube_id = string.sub(youtube_id, 1, 11)
 
 	getranges()
-	if not ranges then return end
-
-	ON = true
-	mp.add_key_binding("b","sponsorblock",toggle)
-	mp.observe_property("time-pos", "native", skip_ads)
+	if ranges then
+		ON = true
+		mp.add_key_binding("b","sponsorblock",toggle)
+		mp.observe_property("time-pos", "native", skip_ads)
+	end
+	return
 end
 
 function toggle()
