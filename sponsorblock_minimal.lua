@@ -67,12 +67,12 @@ end
 function toggle()
 	if ON then
 		mp.unobserve_property(skip_ads)
-		mp.osd_message("[Sponsorblock] off")
+		mp.osd_message("[sponsorblock] off")
 		ON = false
 		return
 	end
 	mp.observe_property("time-pos", "native", skip_ads)
-	mp.osd_message("[Sponsorblock] on")
+	mp.osd_message("[sponsorblock] on")
 	ON = true
 	return
 end
