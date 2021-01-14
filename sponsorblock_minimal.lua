@@ -36,8 +36,10 @@ function skip_ads(name,pos)
 	if pos ~= nil then
 		for k,v in pairs(ranges) do
 			if tonumber(k) <= pos and tonumber(v) > pos then
+				--this message may sometimes be wrong
+				--it only seems to be a visual thing though
         			mp.osd_message("[sponsorblock] skipping forward "..math.floor(tonumber(v)-mp.get_property("time-pos")).."s")
-				mp.set_property("time-pos",tonumber(v)+0.01)
+				mp.set_property("time-pos",tonumber(v)+0.000001)
             			return
     			end
 		end
