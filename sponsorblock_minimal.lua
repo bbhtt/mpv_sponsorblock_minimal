@@ -39,7 +39,9 @@ function skip_ads(name,pos)
 				--this message may sometimes be wrong
 				--it only seems to be a visual thing though
         			mp.osd_message("[sponsorblock] skipping forward "..math.floor(tonumber(v)-mp.get_property("time-pos")).."s")
-				mp.set_property("time-pos",tonumber(v)+0.000001)
+				--need to do the +0.01 otherwise mpv will start spamming skip sometimes
+				--example: https://www.youtube.com/watch?v=4ypMJzeNooo
+				mp.set_property("time-pos",tonumber(v)+0.01)
             			return
     			end
 		end
