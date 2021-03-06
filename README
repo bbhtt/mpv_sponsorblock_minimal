@@ -1,11 +1,18 @@
+On Arch you can get this from the aur (package not maintained by me):
+
+mpv-sponsorblock-minimal-git
+
+
 This is a much more simple version of the sponsorblock mpv plugin.
 
-There are no other functions in this other than the sponsor skipping.
-Also this uses curl rather than python to get the ranges.
-There is also no cache so the ranges may get redownloaded
-if you watch a video more than once.
+There are no other functions in this other than the sponsor skipping. Also this 
+uses curl rather than python to get the ranges. There is also no cache so the 
+ranges may get redownloaded if you watch a video more than once.
 
 b toggles between on/off
 
-Here is a link to the original one:
+Link to the original mpv sponsorblock plugin:
 https://github.com/po5/mpv_sponsorblock
+
+Link to sponsorblock:
+https://github.com/ajayyy/SponsorBlock
