@@ -58,7 +58,7 @@ function file_loaded()
 	    "https?://w?w?w?%.?youtube%.com/v/([%w-_]+).*",
 	    "/watch.*[?&]v=([%w-_]+).*",
 	    "/embed/([%w-_]+).*",
-	    ".*-([%w-_]+).*"
+	    "-([%w-_]+)%."
 	}
 	youtube_id = nil
 	for i,url in ipairs(urls) do
