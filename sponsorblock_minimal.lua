@@ -77,6 +77,13 @@ function file_loaded()
 	return
 end
 
+function end_file()
+	if not ON then return end
+	mp.unobserve_property(skip_ads)
+	ranges = nil
+	ON = false
+end
+
 function toggle()
 	if ON then
 		mp.unobserve_property(skip_ads)
@@ -91,3 +98,4 @@ function toggle()
 end
 
 mp.register_event("file-loaded", file_loaded)
+mp.register_event("end-file", end_file)
