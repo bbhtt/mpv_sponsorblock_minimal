@@ -61,8 +61,9 @@ function file_loaded()
 	    "-([%w-_]+)%."
 	}
 	youtube_id = nil
+	local purl = mp.get_property("metadata/by-key/PURL", "")
 	for i,url in ipairs(urls) do
-	    youtube_id = youtube_id or string.match(video_path, url) or string.match(video_referer, url)
+	    youtube_id = youtube_id or string.match(video_path, url) or string.match(video_referer, url) or string.match(purl, url)
 	end
 
 	if not youtube_id or string.len(youtube_id) < 11 then return end
