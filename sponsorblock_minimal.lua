@@ -4,27 +4,46 @@
 -- using data from https://github.com/ajayyy/SponsorBlock
 
 local options = {
-    API = "https://sponsor.ajay.app/api/skipSegments",
+	server = "https://sponsor.ajay.app/api/skipSegments",
 
-    -- Categories to fetch and skip
-    categories = '"sponsor","intro","outro","interaction","selfpromo"'
+	-- Categories to fetch and skip
+	categories = [["sponsor","intro","outro","interaction","selfpromo"]]
 }
 
-function getranges()
-    	local args = {
-        	"curl",
-		"-s",
-        	"-d",
-        	"videoID="..youtube_id,
-        	"-d",
-		"categories=["..options.categories.."]",
-		"-G",
-        	options.API}
-    	local sponsors = mp.command_native({name = "subprocess", capture_stdout = true, playback_only = false, args = args})
+local ranges
 
-    	if string.match(sponsors.stdout,"%[(.-)%]") then
+function getranges()
+	local res
+	local luacurl_available, cURL = pcall(require,'cURL')
+
+	local args = {
+		([=[categories=[%s]]=]):format(options.categories),
+		([=[videoID=%s]=]):format(youtube_id),
+	}
+
+	local API = ("%s?%s"):format(options.server,table.concat(args,"&"))
+
+	if not(luacurl_available) then -- if Lua-cURL is not available on this system
+		local curl_cmd = {
+			"curl", "-L", "-s", "-G", API -- use inoptimal method of calling external cURL command
+		}
+
+		local sponsors = mp.command_native({name = "subprocess", capture_stdout = true, playback_only = false, args = curl_cmd})
+		res = sponsors.stdout
+	else -- otherwise use Lua-cURL (binding to libcurl)
+		local buf={}
+		local c = cURL.easy_init()
+		c:setopt_followlocation(1)
+		c:setopt_useragent"mpv_sponsorblock_minimal/0.0.0"
+		c:setopt_url(API)
+		c:setopt_writefunction(function(chunk) table.insert(buf,chunk); return true; end)
+		c:perform()
+		res = table.concat(buf)
+	end
+
+	if string.match(res,"%[(.-)%]") then
 		ranges = {}
-		for i in string.gmatch(string.sub(sponsors.stdout,2,-2),"%[(.-)%]") do
+		for i in string.gmatch(string.sub(res,2,-2),"%[(.-)%]") do
 			k,v = string.match(i,"(%d+.?%d*),(%d+.?%d*)")
 			ranges[k] = v
 		end
@@ -35,15 +54,17 @@ end
 function skip_ads(name,pos)
 	if pos ~= nil then
 		for k,v in pairs(ranges) do
-			if tonumber(k) <= pos and tonumber(v) > pos then
+			k = tonumber(k)
+			v = tonumber(v)
+			if k <= pos and v > pos then
 				--this message may sometimes be wrong
 				--it only seems to be a visual thing though
-        			mp.osd_message("[sponsorblock] skipping forward "..math.floor(tonumber(v)-mp.get_property("time-pos")).."s")
+				mp.osd_message(("[sponsorblock] skipping forward %ds"):format(math.floor(v-mp.get_property("time-pos"))))
 				--need to do the +0.01 otherwise mpv will start spamming skip sometimes
 				--example: https://www.youtube.com/watch?v=4ypMJzeNooo
-				mp.set_property("time-pos",tonumber(v)+0.01)
-            			return
-    			end
+				mp.set_property("time-pos",v+0.01)
+				return
+			end
 		end
 	end
 	return
@@ -54,16 +75,16 @@ function file_loaded()
 	local video_referer = string.match(mp.get_property("http-header-fields", ""), "Referer:([^,]+)") or ""
 
 	local urls = {
-	    "https?://youtu%.be/([%w-_]+).*",
-	    "https?://w?w?w?%.?youtube%.com/v/([%w-_]+).*",
-	    "/watch.*[?&]v=([%w-_]+).*",
-	    "/embed/([%w-_]+).*",
-	    "-([%w-_]+)%."
+		"https?://youtu%.be/([%w-_]+).*",
+		"https?://w?w?w?%.?youtube%.com/v/([%w-_]+).*",
+		"/watch.*[?&]v=([%w-_]+).*",
+		"/embed/([%w-_]+).*",
+		"-([%w-_]+)%."
 	}
 	youtube_id = nil
 	local purl = mp.get_property("metadata/by-key/PURL", "")
 	for i,url in ipairs(urls) do
-	    youtube_id = youtube_id or string.match(video_path, url) or string.match(video_referer, url) or string.match(purl, url)
+		youtube_id = youtube_id or string.match(video_path, url) or string.match(video_referer, url) or string.match(purl, url)
 	end
 
 	if not youtube_id or string.len(youtube_id) < 11 then return end
@@ -100,3 +121,4 @@ end
 
 mp.register_event("file-loaded", file_loaded)
 mp.register_event("end-file", end_file)
+
