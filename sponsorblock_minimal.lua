@@ -10,8 +10,6 @@ local options = {
 	categories = [["sponsor","intro","outro","interaction","selfpromo"]]
 }
 
-local ranges
-
 function getranges()
 	local res
 	local luacurl_available, cURL = pcall(require,'cURL')
@@ -30,8 +28,6 @@ function getranges()
 			"curl",
 			"-L",
 			"-s",
-			"-G",
-			"-A", "mpv_sponsorblock_minimal/0.0.0",
 			API -- use inoptimal method of calling external cURL command
 		}
 
@@ -46,7 +42,6 @@ function getranges()
 		local buf={}
 		local c = cURL.easy_init()
 		c:setopt_followlocation(1)
-		c:setopt_useragent"mpv_sponsorblock_minimal/0.0.0"
 		c:setopt_url(API)
 		c:setopt_writefunction(function(chunk) table.insert(buf,chunk); return true; end)
 		c:perform()
@@ -133,4 +128,3 @@ end
 
 mp.register_event("file-loaded", file_loaded)
 mp.register_event("end-file", end_file)
-
