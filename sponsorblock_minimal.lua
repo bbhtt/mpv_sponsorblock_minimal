@@ -7,19 +7,14 @@ local options = {
 	server = "https://sponsor.ajay.app/api/skipSegments",
 
 	-- Categories to fetch and skip
-	categories = [["sponsor","intro","outro","interaction","selfpromo"]]
+	categories = '"sponsor","intro","outro","interaction","selfpromo"'
 }
 
 function getranges()
-	local res
 	local luacurl_available, cURL = pcall(require,'cURL')
 
-	local args = {
-		([=[categories=[%s]]=]):format(options.categories),
-		([=[videoID=%s]=]):format(youtube_id),
-	}
-
-	local API = ("%s?%s"):format(options.server,table.concat(args,"&"))
+	local args = ("categories=[%s]&videoID=%s"):format(options.categories, youtube_id)
+	local API = ("%s?%s"):format(options.server, args)
 
 	if not(luacurl_available) then -- if Lua-cURL is not available on this system
 		local API = API:gsub("%[", "\\["):gsub("]", "\\]")
