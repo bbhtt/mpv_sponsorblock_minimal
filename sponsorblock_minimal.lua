@@ -24,6 +24,8 @@ function getranges()
 	local API = ("%s?%s"):format(options.server,table.concat(args,"&"))
 
 	if not(luacurl_available) then -- if Lua-cURL is not available on this system
+		local API = API:gsub("%[", "\\["):gsub("]", "\\]")
+
 		local curl_cmd = {
 			"curl",
 			"-L",
