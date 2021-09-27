@@ -25,10 +25,20 @@ function getranges()
 
 	if not(luacurl_available) then -- if Lua-cURL is not available on this system
 		local curl_cmd = {
-			"curl", "-L", "-s", "-G", API -- use inoptimal method of calling external cURL command
+			"curl",
+			"-L",
+			"-s",
+			"-G",
+			"-A", "mpv_sponsorblock_minimal/0.0.0",
+			API -- use inoptimal method of calling external cURL command
 		}
 
-		local sponsors = mp.command_native({name = "subprocess", capture_stdout = true, playback_only = false, args = curl_cmd})
+		local sponsors = mp.command_native{
+			name = "subprocess",
+			capture_stdout = true,
+			playback_only = false,
+			args = curl_cmd
+		}
 		res = sponsors.stdout
 	else -- otherwise use Lua-cURL (binding to libcurl)
 		local buf={}
