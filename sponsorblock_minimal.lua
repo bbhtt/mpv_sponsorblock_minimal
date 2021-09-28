@@ -13,19 +13,19 @@ local options = {
 function getranges()
 	local luacurl_available, cURL = pcall(require,'cURL')
 
-	local args = ("categories=[%s]&videoID=%s"):format(options.categories, youtube_id)
-	local API = ("%s?%s"):format(options.server, args)
+	local cstr = ("categories=[%s]"):format(options.categories)
+	local vstr = ("videoID=%s"):format(youtube_id)
 
 	if not(luacurl_available) then -- if Lua-cURL is not available on this system
-		local API = API:gsub("%[", "\\["):gsub("]", "\\]")
-
 		local curl_cmd = {
 			"curl",
 			"-L",
 			"-s",
-			API -- use inoptimal method of calling external cURL command
+			"-G",
+			"-d", cstr,
+			"-d", vstr,
+			options.server
 		}
-
 		local sponsors = mp.command_native{
 			name = "subprocess",
 			capture_stdout = true,
@@ -34,6 +34,7 @@ function getranges()
 		}
 		res = sponsors.stdout
 	else -- otherwise use Lua-cURL (binding to libcurl)
+		local API = ("%s?%s&%s"):format(options.server, cstr, vstr)
 		local buf={}
 		local c = cURL.easy_init()
 		c:setopt_followlocation(1)
