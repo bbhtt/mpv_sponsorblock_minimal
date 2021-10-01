@@ -1,0 +1,1 @@
+sponsorblock_minimal.lua
