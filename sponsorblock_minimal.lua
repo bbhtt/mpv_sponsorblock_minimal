@@ -96,7 +96,7 @@ function file_loaded()
 	getranges()
 	if ranges then
 		ON = true
-		mp.add_key_binding("b","sponsorblock",toggle)
+		mp.add_forced_key_binding("b","sponsorblock",toggle)
 		mp.observe_property("time-pos", "native", skip_ads)
 	end
 	return
