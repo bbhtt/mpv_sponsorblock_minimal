@@ -6,6 +6,10 @@ ranges may get redownloaded if you watch a video more than once.
 
 b toggles between on/off
 
+Prerequisites:
+
+Either lua-curl https://github.com/Lua-cURL/Lua-cURLv3 or curl https://github.com/curl/curl should be installed in the system.
+
 Link to the original mpv sponsorblock plugin:
 https://github.com/po5/mpv_sponsorblock
 
