@@ -1,8 +1,3 @@
-On Arch you can get this from the aur (package not maintained by me):
-
-mpv-sponsorblock-minimal-git
-
-
 This is a much more simple version of the sponsorblock mpv plugin.
 
 There are no other functions in this other than the sponsor skipping. Also this 
