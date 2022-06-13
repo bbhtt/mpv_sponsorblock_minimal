@@ -9,7 +9,7 @@ local options = {
 	server = "https://sponsor.ajay.app/api/skipSegments",
 
 	-- Categories to fetch and skip
-	categories = "sponsor"
+	categories = '"sponsor"'
 }
 
 opt.read_options(options)
