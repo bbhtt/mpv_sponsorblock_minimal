@@ -4,66 +4,61 @@
 -- using data from https://github.com/ajayyy/SponsorBlock
 
 local opt = require 'mp.options'
+local utils = require 'mp.utils'
 
 local options = {
 	server = "https://sponsor.ajay.app/api/skipSegments",
 
 	-- Categories to fetch and skip
-	categories = '"sponsor"'
+	categories = '"sponsor"',
+
+	-- Set this to "true" to use sha256HashPrefix instead of videoID
+	hash = ""
 }
 
 opt.read_options(options)
 
-function getranges()
+function getranges(url)
 	local luacurl_available, cURL = pcall(require,'cURL')
 
-	local cstr = ("categories=[%s]"):format(options.categories)
-	local vstr = ("videoID=%s"):format(youtube_id)
-
+	local res = ""
 	if not(luacurl_available) then -- if Lua-cURL is not available on this system
-		local curl_cmd = {
-			"curl",
-			"-L",
-			"-s",
-			"-G",
-			"-d", cstr,
-			"-d", vstr,
-			options.server
-		}
 		local sponsors = mp.command_native{
 			name = "subprocess",
 			capture_stdout = true,
 			playback_only = false,
-			args = curl_cmd
+			args = {"curl", "-L", "-s", "-g", url}
 		}
 		res = sponsors.stdout
 	else -- otherwise use Lua-cURL (binding to libcurl)
-		local API = ("%s?%s&%s"):format(options.server, cstr, vstr)
 		local buf={}
 		local c = cURL.easy_init()
 		c:setopt_followlocation(1)
-		c:setopt_url(API)
+		c:setopt_url(url)
 		c:setopt_writefunction(function(chunk) table.insert(buf,chunk); return true; end)
 		c:perform()
 		res = table.concat(buf)
 	end
 
-	if string.match(res,"%[(.-)%]") then
-		ranges = {}
-		for i in string.gmatch(string.sub(res,2,-2),"%[(.-)%]") do
-			k,v = string.match(i,"(%d+.?%d*),(%d+.?%d*)")
-			ranges[k] = v
+	local json = utils.parse_json(res)
+	if options.hash == "true" and json ~= nil then
+		for _, i in pairs(json) do
+			if i.videoID == youtube_id then
+				return i.segments
+			end
 		end
+	else
+		return json
 	end
-	return
+
+	return nil
 end
 
 function skip_ads(name,pos)
 	if pos ~= nil then
-		for k,v in pairs(ranges) do
-			k = tonumber(k)
-			v = tonumber(v)
-			if k <= pos and v > pos then
+		for _, i in pairs(ranges) do
+			v = i.segment[2]
+			if i.segment[1] <= pos and v > pos then
 				--this message may sometimes be wrong
 				--it only seems to be a visual thing though
 				mp.osd_message(("[sponsorblock] skipping forward %ds"):format(math.floor(v-mp.get_property("time-pos"))))
@@ -100,8 +95,21 @@ function file_loaded()
 	if not youtube_id or string.len(youtube_id) < 11 then return end
 	youtube_id = string.sub(youtube_id, 1, 11)
 
-	getranges()
-	if ranges then
+	local url = ""
+	if options.hash == "true" then
+		local sha = mp.command_native{
+			name = "subprocess",
+			capture_stdout = true,
+			args = {"sha256sum"},
+			stdin_data = youtube_id
+		}
+		url = ("%s/%s?categories=[%s]"):format(options.server, string.sub(sha.stdout, 0, 4), options.categories)
+	else
+		url = ("%s?videoID=%s&categories=[%s]"):format(options.server, youtube_id, options.categories)
+	end
+
+	ranges = getranges(url)
+	if ranges ~= nil then
 		ON = true
 		mp.add_key_binding("b","sponsorblock",toggle)
 		mp.observe_property("time-pos", "native", skip_ads)
